@@ -1,16 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { fetchRecipes, searchRecipes } from '../api/recipes';
+import { fetchRecipes, searchRecipes, fetchRecipesByCategory } from '../api/recipes';
 import { Meal } from '../types';
 import { Link } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
+import CategoryFilter from '../components/CategoryFilter';
 
 function RecipesList() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   const { data, isLoading, error } = useQuery<{ meals: Meal[] }>({
-    queryKey: searchQuery ? ['recipes', searchQuery] : ['recipes'],
-    queryFn: () => (searchQuery ? searchRecipes(searchQuery) : fetchRecipes()),
+    queryKey: selectedCategory
+      ? ['recipes', selectedCategory]
+      : searchQuery
+      ? ['recipes', searchQuery]
+      : ['recipes'],
+    queryFn: () =>
+      selectedCategory
+        ? fetchRecipesByCategory(selectedCategory)
+        : searchQuery
+        ? searchRecipes(searchQuery)
+        : fetchRecipes(),
   });
 
   return (
@@ -24,11 +35,10 @@ function RecipesList() {
         }}
       >
         <h1>Список рецептів</h1>
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <Link to="/selected">Перейти до вибраних рецептів</Link>
-        </div>
         <SearchBar onSearch={setSearchQuery} />
       </div>
+
+      <CategoryFilter onSelectCategory={setSelectedCategory} />
 
       {isLoading && <p>Завантаження...</p>}
       {error && <p>Помилка при отриманні рецептів</p>}
@@ -48,6 +58,10 @@ function RecipesList() {
             </Link>
           </div>
         ))}
+      </div>
+
+      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <Link to="/selected">Перейти до вибраних рецептів</Link>
       </div>
     </div>
   );
