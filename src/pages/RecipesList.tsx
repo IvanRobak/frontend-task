@@ -22,6 +22,7 @@ function RecipesList() {
             <h3>{meal.strMeal}</h3>
             <p>{meal.strCategory}</p>
             <Link to={`/recipe/${meal.idMeal}`}>Детальніше</Link>
+            <Link to="/selected">Перейти до вибраних рецептів</Link>
           </div>
         ))}
       </div>
