@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { fetchRecipes, searchRecipes, fetchRecipesByCategory } from '../api/recipes';
+import { fetchRecipes } from '../api/recipes';
 import { Meal } from '../types';
 import { Link } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
@@ -12,41 +12,34 @@ function RecipesList() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4; // Відображаємо 4 страви на сторінці
 
+  // Отримуємо всі рецепти
   const { data, isLoading, error } = useQuery<{ meals: Meal[] }>({
-    queryKey: selectedCategory
-      ? ['recipes', selectedCategory]
-      : searchQuery
-      ? ['recipes', searchQuery]
-      : ['recipes'],
-    queryFn: () =>
-      selectedCategory
-        ? fetchRecipesByCategory(selectedCategory)
-        : searchQuery
-        ? searchRecipes(searchQuery)
-        : fetchRecipes(),
+    queryKey: ['recipes'],
+    queryFn: fetchRecipes,
   });
 
-  // Загальна кількість сторінок
-  const totalItems = data?.meals?.length || 0;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  // Фільтруємо рецепти на фронтенді
+  const filteredRecipes =
+    data?.meals?.filter(
+      meal =>
+        (!selectedCategory || meal.strCategory === selectedCategory) &&
+        (!searchQuery || meal.strMeal.toLowerCase().includes(searchQuery.toLowerCase()))
+    ) || [];
 
-  // Визначаємо індекси для пагінації
+  // Загальна кількість сторінок після фільтрації
+  const totalPages = Math.ceil(filteredRecipes.length / itemsPerPage);
+
+  // Отримуємо рецепти для поточної сторінки
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedRecipes = data?.meals?.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedRecipes = filteredRecipes.slice(startIndex, startIndex + itemsPerPage);
 
   // Функція для генерації кнопок пагінації
   const getPaginationButtons = () => {
     const pages: (number | string)[] = [];
 
-    // Завжди додаємо першу сторінку
     pages.push(1);
+    if (currentPage > 4) pages.push('...');
 
-    // Додаємо "..." якщо поточна сторінка >= 5
-    if (currentPage > 4) {
-      pages.push('...');
-    }
-
-    // Додаємо дві попередні, поточну та дві наступні сторінки
     for (
       let i = Math.max(2, currentPage - 2);
       i <= Math.min(totalPages - 1, currentPage + 2);
@@ -55,15 +48,8 @@ function RecipesList() {
       pages.push(i);
     }
 
-    // Додаємо "..." якщо поточна сторінка <= totalPages - 4
-    if (currentPage < totalPages - 3) {
-      pages.push('...');
-    }
-
-    // Завжди додаємо останню сторінку
-    if (totalPages > 1) {
-      pages.push(totalPages);
-    }
+    if (currentPage < totalPages - 3) pages.push('...');
+    if (totalPages > 1) pages.push(totalPages);
 
     return pages;
   };
@@ -91,10 +77,10 @@ function RecipesList() {
 
       {isLoading && <p>Завантаження...</p>}
       {error && <p>Помилка при отриманні рецептів</p>}
-      {paginatedRecipes?.length === 0 && <p>Нічого не знайдено</p>}
+      {paginatedRecipes.length === 0 && <p>Нічого не знайдено</p>}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-        {paginatedRecipes?.map((meal: Meal) => (
+        {paginatedRecipes.map(meal => (
           <div
             key={meal.idMeal}
             style={{ border: '1px solid #ddd', padding: '10px', width: '250px' }}
@@ -122,7 +108,6 @@ function RecipesList() {
             {'<'}
           </button>
 
-          {/* Генеруємо кнопки */}
           {getPaginationButtons().map((page, index) =>
             typeof page === 'number' ? (
               <button
