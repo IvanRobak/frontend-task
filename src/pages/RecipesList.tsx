@@ -12,7 +12,7 @@ function RecipesList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4; // Відображаємо 4 страви на сторінці
+  const itemsPerPage = 4;
 
   // Отримуємо всі рецепти
   const { data, isLoading, error } = useQuery<{ meals: Meal[] }>({
@@ -20,7 +20,7 @@ function RecipesList() {
     queryFn: fetchRecipes,
   });
 
-  // Фільтруємо рецепти на фронтенді
+  // Фільтруємо рецепти
   const filteredRecipes =
     data?.meals?.filter(
       meal =>
@@ -36,20 +36,19 @@ function RecipesList() {
   const paginatedRecipes = filteredRecipes.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="max-w-7xl mx-auto px-4">
-      {/* Заголовок і пошук */}
-      <div className="flex flex-col md:flex-row justify-between items-center py-6">
-        <h1 className="text-3xl font-semibold text-gray-800">Список рецептів</h1>
+    <div className="max-w-7xl mx-auto p-15">
+      <h1 className="text-4xl font-bold text-center text-gray-800 py-6">Список рецептів</h1>
+
+      {/* Панель пошуку та фільтрації */}
+      <div className="flex flex-col md:flex-row justify-between items-center py-4">
+        <CategoryFilter
+          onSelectCategory={category => {
+            setSelectedCategory(category);
+            setCurrentPage(1);
+          }}
+        />
         <SearchBar onSearch={setSearchQuery} />
       </div>
-
-      {/* Фільтр категорій */}
-      <CategoryFilter
-        onSelectCategory={category => {
-          setSelectedCategory(category);
-          setCurrentPage(1);
-        }}
-      />
 
       {/* Повідомлення про стан */}
       {isLoading && <p className="text-center text-gray-600">Завантаження...</p>}
@@ -76,8 +75,8 @@ function RecipesList() {
 
       {/* Посилання на вибрані рецепти */}
       <div className="mt-6 text-center">
-        <Link to="/selected" className="text-blue-600 hover:underline">
-          Перейти до вибраних рецептів
+        <Link to="/selected" className="text-blue-600 hover:underline text-lg font-semibold">
+          Перейти до вибраних рецептів →
         </Link>
       </div>
     </div>

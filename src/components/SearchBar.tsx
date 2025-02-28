@@ -27,13 +27,7 @@ function SearchBar({ onSearch }: SearchBarProps) {
       placeholder="🔍 Пошук рецепта..."
       value={searchTerm}
       onChange={handleChange}
-      style={{
-        padding: '8px 12px',
-        fontSize: '16px',
-        borderRadius: '8px',
-        border: '1px solid #ccc',
-        width: '250px',
-      }}
+      className="px-4 py-2 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition w-64 shadow-sm"
     />
   );
 }
