@@ -10,7 +10,7 @@ const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter basename="/frontend-task">
         <div className="min-h-screen bg-gradient-to-br from-green-100 via-pink-100 to-purple-200">
           <App />
         </div>
