@@ -1,7 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { fetchRecipes } from '../api/recipes';
-import { Meal } from '../types';
+import { useRecipes } from '../hooks/useRecipes';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import RecipeCard from '../components/RecipeCard';
@@ -14,13 +12,8 @@ function RecipesList() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  // Отримуємо всі рецепти
-  const { data, isLoading, error } = useQuery<{ meals: Meal[] }>({
-    queryKey: ['recipes'],
-    queryFn: fetchRecipes,
-  });
+  const { data, isLoading, error } = useRecipes();
 
-  // Фільтруємо рецепти
   const filteredRecipes =
     data?.meals?.filter(
       meal =>
@@ -28,10 +21,8 @@ function RecipesList() {
         (!searchQuery || meal.strMeal.toLowerCase().includes(searchQuery.toLowerCase()))
     ) || [];
 
-  // Загальна кількість сторінок після фільтрації
   const totalPages = Math.ceil(filteredRecipes.length / itemsPerPage);
 
-  // Отримуємо рецепти для поточної сторінки
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedRecipes = filteredRecipes.slice(startIndex, startIndex + itemsPerPage);
 
@@ -64,7 +55,6 @@ function RecipesList() {
         ))}
       </div>
 
-      {/* Пагінація */}
       {totalPages > 1 && (
         <Pagination
           currentPage={currentPage}
@@ -73,9 +63,8 @@ function RecipesList() {
         />
       )}
 
-      {/* Посилання на вибрані рецепти */}
       <div className="mt-6 text-center">
-        <Link to="/selected" className="text-blue-600 hover:underline text-lg font-semibold">
+        <Link to="/selected" className="text-purple-600 hover:underline text-lg font-semibold">
           Перейти до вибраних рецептів →
         </Link>
       </div>

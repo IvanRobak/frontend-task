@@ -1,36 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { removeFromSelectedRecipes, countIngredients } from '../api/selectedRecipes';
-import { Meal } from '../types';
-import RecipeCard from '../components/RecipeCard';
 import { useNavigate } from 'react-router-dom';
+import { useSelectedRecipes } from '../hooks/useSelectedRecipes';
+import RecipeCard from '../components/RecipeCard';
 
 function SelectedRecipes() {
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  // Отримуємо вибрані рецепти (імітація кешу)
-  const { data: selectedRecipes = [] } = useQuery<Meal[]>({
-    queryKey: ['selectedRecipes'],
-    queryFn: () => [],
-    staleTime: Infinity, // Кеш зберігається
-  });
-
-  // Видалення рецепта з вибраного
-  const removeRecipeMutation = useMutation({
-    mutationFn: async (id: string) => {
-      queryClient.setQueryData(['selectedRecipes'], (prev: Meal[] | undefined) =>
-        removeFromSelectedRecipes(prev || [], id)
-      );
-      return Promise.resolve();
-    },
-  });
-
-  // Підрахунок інгредієнтів
-  const ingredientCounts = countIngredients(selectedRecipes);
+  const { selectedRecipes, removeRecipeMutation, ingredientCounts } = useSelectedRecipes();
 
   return (
-    <div className="max-w-7xl mx-auto p-15">
-      {/* Кнопка "Назад" */}
+    <div className="max-w-7xl mx-auto p-8">
       <button
         onClick={() => navigate(-1)}
         className="mb-4 px-5 py-2 rounded-lg text-white bg-gradient-to-r from-teal-300 to-teal-500 hover:from-teal-400 hover:to-teal-600 transition"

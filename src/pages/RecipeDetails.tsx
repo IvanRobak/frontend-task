@@ -1,41 +1,19 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchRecipeById } from '../api/recipes';
-import { addToSelectedRecipes } from '../api/selectedRecipes';
-import { Meal } from '../types';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useRecipeDetails } from '../hooks/useRecipeDetails';
+import { useSelectedRecipes } from '../hooks/useSelectedRecipes';
 
 function RecipeDetails() {
   const { id } = useParams<{ id: string }>();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  // Отримуємо деталі рецепта
-  const { data, isLoading, error } = useQuery<{ meals: Meal[] }>({
-    queryKey: ['recipe', id],
-    queryFn: () => fetchRecipeById(id!),
-  });
-
-  // Отримуємо список обраних рецептів
-  const selectedRecipes = queryClient.getQueryData<Meal[]>(['selectedRecipes']) || [];
-
-  // Перевіряємо, чи рецепт вже є у вибраному
-  const isRecipeSelected = selectedRecipes.some(recipe => recipe.idMeal === id);
-
-  // Додаємо рецепт до вибраного
-  const addRecipeMutation = useMutation({
-    mutationFn: async (recipe: Meal) => {
-      queryClient.setQueryData(['selectedRecipes'], (prev: Meal[] | undefined) =>
-        addToSelectedRecipes(prev || [], recipe)
-      );
-      return Promise.resolve();
-    },
-  });
+  const { data, isLoading, error } = useRecipeDetails(id!);
+  const { selectedRecipes, addRecipeMutation } = useSelectedRecipes();
 
   if (isLoading) return <p className="text-center text-gray-600">Завантаження...</p>;
   if (error) return <p className="text-center text-red-600">Помилка при завантаженні рецепта</p>;
   if (!data?.meals?.length) return <p className="text-center text-gray-600">Рецепт не знайдено</p>;
 
   const meal = data.meals[0];
+  const isRecipeSelected = selectedRecipes.some(recipe => recipe.idMeal === id);
 
   return (
     <>
