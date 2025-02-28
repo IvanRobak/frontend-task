@@ -2,9 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { fetchRecipes } from '../api/recipes';
 import { Meal } from '../types';
-import { Link } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
+import RecipeCard from '../components/RecipeCard';
+import Pagination from '../components/Pagination';
+import { Link } from 'react-router-dom';
 
 function RecipesList() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,41 +35,15 @@ function RecipesList() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedRecipes = filteredRecipes.slice(startIndex, startIndex + itemsPerPage);
 
-  // Функція для генерації кнопок пагінації
-  const getPaginationButtons = () => {
-    const pages: (number | string)[] = [];
-
-    pages.push(1);
-    if (currentPage > 4) pages.push('...');
-
-    for (
-      let i = Math.max(2, currentPage - 2);
-      i <= Math.min(totalPages - 1, currentPage + 2);
-      i++
-    ) {
-      pages.push(i);
-    }
-
-    if (currentPage < totalPages - 3) pages.push('...');
-    if (totalPages > 1) pages.push(totalPages);
-
-    return pages;
-  };
-
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '20px 0',
-        }}
-      >
-        <h1>Список рецептів</h1>
+    <div className="max-w-7xl mx-auto px-4">
+      {/* Заголовок і пошук */}
+      <div className="flex flex-col md:flex-row justify-between items-center py-6">
+        <h1 className="text-3xl font-semibold text-gray-800">Список рецептів</h1>
         <SearchBar onSearch={setSearchQuery} />
       </div>
 
+      {/* Фільтр категорій */}
       <CategoryFilter
         onSelectCategory={category => {
           setSelectedCategory(category);
@@ -75,69 +51,34 @@ function RecipesList() {
         }}
       />
 
-      {isLoading && <p>Завантаження...</p>}
-      {error && <p>Помилка при отриманні рецептів</p>}
-      {paginatedRecipes.length === 0 && <p>Нічого не знайдено</p>}
+      {/* Повідомлення про стан */}
+      {isLoading && <p className="text-center text-gray-600">Завантаження...</p>}
+      {error && <p className="text-center text-red-600">Помилка при отриманні рецептів</p>}
+      {paginatedRecipes.length === 0 && (
+        <p className="text-center text-gray-600">Нічого не знайдено</p>
+      )}
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+      {/* Відображення карток */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6">
         {paginatedRecipes.map(meal => (
-          <div
-            key={meal.idMeal}
-            style={{ border: '1px solid #ddd', padding: '10px', width: '250px' }}
-          >
-            <img src={meal.strMealThumb} alt={meal.strMeal} width="100%" />
-            <h3>{meal.strMeal}</h3>
-            <p>{meal.strCategory}</p>
-            <Link to={`/recipe/${meal.idMeal}`} style={{ display: 'block', marginTop: '10px' }}>
-              Детальніше
-            </Link>
-          </div>
+          <RecipeCard key={meal.idMeal} meal={meal} />
         ))}
       </div>
 
       {/* Пагінація */}
       {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', gap: '5px' }}>
-          <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
-            {'<<'}
-          </button>
-          <button
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            {'<'}
-          </button>
-
-          {getPaginationButtons().map((page, index) =>
-            typeof page === 'number' ? (
-              <button
-                key={index}
-                onClick={() => setCurrentPage(page)}
-                style={{ fontWeight: currentPage === page ? 'bold' : 'normal' }}
-              >
-                {page}
-              </button>
-            ) : (
-              <span key={index} style={{ padding: '5px' }}>
-                ...
-              </span>
-            )
-          )}
-
-          <button
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            {'>'}
-          </button>
-          <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>
-            {'>>'}
-          </button>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+        />
       )}
 
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        <Link to="/selected">Перейти до вибраних рецептів</Link>
+      {/* Посилання на вибрані рецепти */}
+      <div className="mt-6 text-center">
+        <Link to="/selected" className="text-blue-600 hover:underline">
+          Перейти до вибраних рецептів
+        </Link>
       </div>
     </div>
   );
