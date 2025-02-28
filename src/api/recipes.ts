@@ -1,19 +1,25 @@
-const API_URL = "https://www.themealdb.com/api/json/v1/1/search.php?s=";
+const API_URL = 'https://www.themealdb.com/api/json/v1/1/search.php?s=';
 
 export const fetchRecipes = async () => {
   const response = await fetch(API_URL);
   if (!response.ok) {
-    throw new Error("Failed to fetch recipes");
+    throw new Error('Failed to fetch recipes');
   }
   return response.json();
 };
 
 export const fetchRecipeById = async (id: string) => {
-  const response = await fetch(
-    `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`
-  );
+  const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`);
   if (!response.ok) {
-    throw new Error("Failed to fetch recipe details");
+    throw new Error('Failed to fetch recipe details');
+  }
+  return response.json();
+};
+
+export const searchRecipes = async (query: string) => {
+  const response = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch recipes');
   }
   return response.json();
 };
